@@ -10,14 +10,33 @@ const app = express();
 app.use(express.json());
 
 let USERS = [];
+let BLOGS = [];
 
 try {
   USERS = JSON.parse(fs.readFileSync("users.json", "utf8"));
+  BLOGS = JSON.parse(fs.readFileSync("blogs.json", "utf8"));
 } catch {
   USERS = [];
+  BLOGS = [];
 }
 
 const SECRET_KEY = "MyBloggingPlatform!";
+
+const authenticateJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+};
 
 // Users Signup Route
 
@@ -73,6 +92,39 @@ app.post("/login", (req, res) => {
   }
 
   res.status(401).send("Invalid Credentials!");
+});
+
+// Route for creating Blog!
+
+app.post("/craft", authenticateJWT, (req, res) => {
+  const email = req.headers.email;
+  const blogBody = req.body;
+
+  if (blogBody) {
+    let id = Math.floor(Math.random() * 100000);
+    const newBlog = {
+      id: id,
+      title: blogBody.title,
+      description: blogBody.description,
+      imgLink: blogBody.imgLink,
+      mainBlog: blogBody.mainBlog,
+    };
+
+    BLOGS.push(newBlog);
+    fs.writeFileSync("blogs.json", JSON.stringify(BLOGS));
+
+    for (let elem of USERS) {
+      if (elem.email === email) {
+        elem.blogs.push(id);
+        fs.writeFileSync("users.json", JSON.stringify(USERS));
+        break;
+      }
+    }
+
+    res.status(200).send("Blog published!");
+  } else {
+    res.status(403).send("Error Occured");
+  }
 });
 
 app.listen(port, () => {
