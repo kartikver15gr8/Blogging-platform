@@ -23,6 +23,8 @@ const SECRET_KEY = "MyBloggingPlatform!";
 
 app.post("/signup", (req, res) => {
   const userCreds = req.body;
+  let email = userCreds.email;
+
   let existingUser = false;
 
   for (let elem of USERS) {
@@ -44,8 +46,12 @@ app.post("/signup", (req, res) => {
 
     USERS.push(newUser);
 
+    const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
     fs.writeFileSync("users.json", JSON.stringify(USERS));
-    res.status(200).send("User Created successfully!");
+    res.status(200).json({ message: "User Created successfully!", token });
   }
 });
 
@@ -53,18 +59,21 @@ app.post("/signup", (req, res) => {
 
 app.post("/login", (req, res) => {
   const userCreds = req.body;
+  let email = userCreds.email;
   for (let elem of USERS) {
     if (
       elem.email === userCreds.email &&
       elem.password === userCreds.password
     ) {
-      res.status(200).send("User Logged in Successfully!");
+      const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
+        expiresIn: "1h",
+      });
+      res.status(200).json({ message: "User Logged in Successfully!", token });
     }
   }
 
   res.status(401).send("Invalid Credentials!");
 });
-
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
