@@ -49,6 +49,23 @@ app.post("/signup", (req, res) => {
   }
 });
 
+// Login route
+
+app.post("/login", (req, res) => {
+  const userCreds = req.body;
+  for (let elem of USERS) {
+    if (
+      elem.email === userCreds.email &&
+      elem.password === userCreds.password
+    ) {
+      res.status(200).send("User Logged in Successfully!");
+    }
+  }
+
+  res.status(401).send("Invalid Credentials!");
+});
+
+
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
 });
