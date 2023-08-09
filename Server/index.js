@@ -127,6 +127,12 @@ app.post("/craft", authenticateJWT, (req, res) => {
   }
 });
 
+// Get All Blogs
+
+app.get("/blogs", authenticateJWT, (req, res) => {
+  res.status(200).send(JSON.stringify(BLOGS));
+});
+
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
 });
