@@ -27,40 +27,40 @@ I'll use MERN stack for this application!
 
 ## Categories or Tags:
 
-Create a new category/tag: /api/categories/create
-Get all categories/tags: /api/categories
+- Create a new category/tag: /api/categories/create
+- Get all categories/tags: /api/categories
 
 ## User Profile and Settings:
 
-Get user's own profile: /api/users/profile
-Update user profile: /api/users/profile
-Change password: /api/users/change-password
+- Get user's own profile: /api/users/profile
+- Update user profile: /api/users/profile
+- Change password: /api/users/change-password
 
 ## Search and Filtering:
 
-Search for posts: /api/posts/search
-Filter posts by category/tag: /api/posts/filter
+- Search for posts: /api/posts/search
+- Filter posts by category/tag: /api/posts/filter
 
 ## Likes and Dislikes:
 
-Like a post: /api/posts/:postId/like
-Dislike a post: /api/posts/:postId/dislike
+- Like a post: /api/posts/:postId/like
+- Dislike a post: /api/posts/:postId/dislike
 
 ## Social Sharing:
 
-Share a post: /api/posts/:postId/share
+- Share a post: /api/posts/:postId/share
 
 ## Pagination:
 
-Implement pagination for fetching lists of posts, comments, etc.
+- Implement pagination for fetching lists of posts, comments, etc.
 
 ## File Uploads (Images for Posts):
 
-Upload images for blog posts: /api/uploads
+- Upload images for blog posts: /api/uploads
 
 ## Notifications:
 
-Send notifications to users for new comments, likes, shares, etc.
+- Send notifications to users for new comments, likes, shares, etc.
 
 ## Admin Panel:
 
