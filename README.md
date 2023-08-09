@@ -3,7 +3,6 @@ This website will facilitate users to write blogs and edit them publish them & s
 
 I'll use MERN stack for this application!
 
-
 ## User Authentication and Authorization:
 
 - Signup: /api/auth/signup
@@ -56,6 +55,7 @@ Share a post: /api/posts/:postId/share
 Implement pagination for fetching lists of posts, comments, etc.
 
 ## File Uploads (Images for Posts):
+
 Upload images for blog posts: /api/uploads
 
 ## Notifications:
@@ -65,5 +65,7 @@ Send notifications to users for new comments, likes, shares, etc.
 ## Admin Panel:
 
 ## Manage users: /api/admin/users
+
 ## Manage posts: /api/admin/posts
+
 ## Manage categories/tags: /api/admin/categories
