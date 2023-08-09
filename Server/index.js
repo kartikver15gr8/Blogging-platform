@@ -125,6 +125,8 @@ app.get("/admin/allusers", authenticateAdmins, (req, res) => {
   res.status(200).send(JSON.stringify(USERS));
 });
 
+// ---------------- Below are Users Routes ----------------------
+
 // Users Signup Route
 
 app.post("/users/signup", (req, res) => {
@@ -213,6 +215,12 @@ app.post("/users/craft", authenticateJWT, (req, res) => {
     res.status(403).send("Error Occured");
   }
 });
+
+// Get User Dashboard
+
+// app.get("/users/dashboard", authenticateJWT, (req, res) => {
+
+// });
 
 // Get All Blogs
 
