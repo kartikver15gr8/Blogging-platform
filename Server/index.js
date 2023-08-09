@@ -3,6 +3,7 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const fs = require("fs");
 const port = 3000;
 const app = express();
@@ -13,15 +14,43 @@ let USERS = [];
 let BLOGS = [];
 let ADMINS = [];
 
-try {
-  USERS = JSON.parse(fs.readFileSync("users.json", "utf8"));
-  BLOGS = JSON.parse(fs.readFileSync("blogs.json", "utf8"));
-  ADMINS = JSON.parse(fs.readFileSync("admins.json", "utf8"));
-} catch {
-  USERS = [];
-  BLOGS = [];
-  ADMINS = [];
-}
+// try {
+//   USERS = JSON.parse(fs.readFileSync("users.json", "utf8"));
+//   BLOGS = JSON.parse(fs.readFileSync("blogs.json", "utf8"));
+//   ADMINS = JSON.parse(fs.readFileSync("admins.json", "utf8"));
+// } catch {
+//   USERS = [];
+//   BLOGS = [];
+//   ADMINS = [];
+// }
+
+// Defining Mongoose Schemas
+
+const adminSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String,
+});
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String,
+  blogs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blogs" }],
+});
+
+const blogSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  imgLink: String,
+  mainBlog: String,
+});
+
+// Defining Mongoose Models
+
+const Admins = mongoose.model("Admins", adminSchema);
+const Users = mongoose.model("Users", userSchema);
+const Blogs = mongoose.model("Blogs", blogSchema);
 
 // For Users Authentication
 const SECRET_KEY = "MyBloggingPlatform!";
@@ -63,61 +92,97 @@ const authenticateAdmins = (req, res, next) => {
   }
 };
 
+// Connect to MongoDB
+
+mongoose.connect(
+  "mongodb+srv://kartikver31122002:xu7c9atC94fdm0ed@cluster0.tr6x6eg.mongodb.net/Blogs-App",
+  { useNewUrlParser: true, useUnifiedTopology: true, dbName: "Blogs-App" }
+);
+
 // Admins Signup
 
-app.post("/admin/signup", (req, res) => {
+app.post("/admin/signup", async (req, res) => {
   const userCreds = req.body;
   const email = userCreds.email;
+  const password = userCreds.password;
 
-  let existingUser = false;
+  // let existingUser = false;
+  const admin = await Admins.findOne({ email });
 
-  for (let elem of ADMINS) {
-    if (elem.email === userCreds.email) {
-      existingUser = true;
-      break;
-    }
-  }
-
-  if (existingUser) {
-    res.status(402).send("Admin already exists with this creds!");
+  if (admin) {
+    res.status(403).json({ message: "Admin already exists" });
   } else {
-    let newAdmin = {
-      name: userCreds.name,
-      email: userCreds.email,
-      password: userCreds.password,
-    };
-
+    const obj = { email: email, password: password };
+    const newAdmin = new Admins(obj);
+    newAdmin.save();
     const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
       expiresIn: "1h",
     });
-
-    ADMINS.push(newAdmin);
-    fs.writeFileSync("admins.json", JSON.stringify(ADMINS));
-
     res
       .status(200)
       .json({ message: "Admin has been created successfully!", token });
   }
+
+  // for (let elem of ADMINS) {
+  //   if (elem.email === userCreds.email) {
+  //     existingUser = true;
+  //     break;
+  //   }
+  // }
+
+  // if (existingUser) {
+  //   res.status(402).send("Admin already exists with this creds!");
+  // } else {
+  //   let newAdmin = {
+  //     name: userCreds.name,
+  //     email: userCreds.email,
+  //     password: userCreds.password,
+  //   };
+
+  //   const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
+  //     expiresIn: "1h",
+  //   });
+
+  //   ADMINS.push(newAdmin);
+  //   fs.writeFileSync("admins.json", JSON.stringify(ADMINS));
+
+  //   res
+  //     .status(200)
+  //     .json({ message: "Admin has been created successfully!", token });
+  // }
 });
 
 // Admins Login
-app.post("/admin/login", (req, res) => {
+
+app.post("/admin/login", async (req, res) => {
   const userCreds = req.body;
   const email = userCreds.email;
+  const password = userCreds.password;
 
-  for (let elem of ADMINS) {
-    if (
-      elem.email === userCreds.email &&
-      elem.password === userCreds.password
-    ) {
-      const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
-        expiresIn: "1h",
-      });
-      res.status(200).json({ message: "Logged in Successfullly", token });
-    }
+  const admin = await Admins.findOne({ email, password });
+
+  if (admin) {
+    const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
+      expiresIn: "1h",
+    });
+    res.status(200).json({ message: "Admin logged in Successfully", token });
+  } else {
+    res.status(403).json({ message: "Invalid username or password" });
   }
 
-  res.status(403).send("Invalid Credentials!");
+  // for (let elem of ADMINS) {
+  //   if (
+  //     elem.email === userCreds.email &&
+  //     elem.password === userCreds.password
+  //   ) {
+  //     const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
+  //       expiresIn: "1h",
+  //     });
+  //     res.status(200).json({ message: "Logged in Successfullly", token });
+  //   }
+  // }
+
+  // res.status(403).send("Invalid Credentials!");
 });
 
 // Get All Users
