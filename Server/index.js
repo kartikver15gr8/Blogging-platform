@@ -10,9 +10,9 @@ const app = express();
 
 app.use(express.json());
 
-let USERS = [];
-let BLOGS = [];
-let ADMINS = [];
+// let USERS = [];
+// let BLOGS = [];
+// let ADMINS = [];
 
 // try {
 //   USERS = JSON.parse(fs.readFileSync("users.json", "utf8"));
@@ -95,14 +95,17 @@ const authenticateAdmins = (req, res, next) => {
 // Connect to MongoDB
 
 mongoose.connect(
-  "mongodb+srv://kartikver31122002:xu7c9atC94fdm0ed@cluster0.tr6x6eg.mongodb.net/Blogs-App",
-  { useNewUrlParser: true, useUnifiedTopology: true, dbName: "Blogs-App" }
+  "mongodb+srv://Kartik:M6I1SRXOHJRS3DhA@cluster0.vioh21c.mongodb.net/BlogApp",
+  { useNewUrlParser: true, useUnifiedTopology: true, dbName: "BlogApp" }
 );
+
+// mongoose.connect("mongodb://localhost:27017");
 
 // Admins Signup
 
 app.post("/admin/signup", async (req, res) => {
   const userCreds = req.body;
+  const name = userCreds.name;
   const email = userCreds.email;
   const password = userCreds.password;
 
@@ -112,7 +115,7 @@ app.post("/admin/signup", async (req, res) => {
   if (admin) {
     res.status(403).json({ message: "Admin already exists" });
   } else {
-    const obj = { email: email, password: password };
+    const obj = { name: name, email: email, password: password };
     const newAdmin = new Admins(obj);
     newAdmin.save();
     const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
@@ -194,91 +197,132 @@ app.get("/admin/allusers", authenticateAdmins, (req, res) => {
 
 // Users Signup Route
 
-app.post("/users/signup", (req, res) => {
-  const userCreds = req.body;
-  let email = userCreds.email;
+app.post("/users/signup", async (req, res) => {
+  const { name, email, password } = req.body;
 
-  let existingUser = false;
+  const user = await Users.findOne({ email });
 
-  for (let elem of USERS) {
-    if (elem.email === userCreds.email) {
-      existingUser = true;
-      break;
-    }
-  }
-
-  if (existingUser) {
-    res.status(403).send("User already exists! Kindly login.");
+  if (user) {
+    res.status(403).send("User already exists!");
   } else {
-    const newUser = {
-      name: userCreds.name,
-      email: userCreds.email,
-      password: userCreds.password,
-      blogs: [],
-    };
-
-    USERS.push(newUser);
+    const obj = { name: name, email: email, password: password, blogs: [] };
+    const newUser = new Users(obj);
+    newUser.save();
 
     const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
       expiresIn: "1h",
     });
 
-    fs.writeFileSync("users.json", JSON.stringify(USERS));
-    res.status(200).json({ message: "User Created successfully!", token });
+    res
+      .status(200)
+      .json({ message: "User has been created successfully!", token });
   }
+
+  // let existingUser = false;
+
+  // for (let elem of USERS) {
+  //   if (elem.email === userCreds.email) {
+  //     existingUser = true;
+  //     break;
+  //   }
+  // }
+
+  // if (existingUser) {
+  //   res.status(403).send("User already exists! Kindly login.");
+  // } else {
+  //   const newUser = {
+  //     name: userCreds.name,
+  //     email: userCreds.email,
+  //     password: userCreds.password,
+  //     blogs: [],
+  //   };
+
+  //   USERS.push(newUser);
+
+  //   const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
+  //     expiresIn: "1h",
+  //   });
+
+  //   fs.writeFileSync("users.json", JSON.stringify(USERS));
+  //   res.status(200).json({ message: "User Created successfully!", token });
+  // }
 });
 
 // Login route
 
-app.post("/users/login", (req, res) => {
+app.post("/users/login", async (req, res) => {
   const userCreds = req.body;
   let email = userCreds.email;
-  for (let elem of USERS) {
-    if (
-      elem.email === userCreds.email &&
-      elem.password === userCreds.password
-    ) {
-      const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
-        expiresIn: "1h",
-      });
-      res.status(200).json({ message: "User Logged in Successfully!", token });
-    }
+  let password = userCreds.password;
+
+  const user = await Users.findOne({ email, password });
+
+  if (user) {
+    const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+    res.status(200).json({ message: "User logged in successfully!", token });
+  } else {
+    res.status(403).send("Invalid Creds!");
   }
 
-  res.status(401).send("Invalid Credentials!");
+  // for (let elem of USERS) {
+  //   if (
+  //     elem.email === userCreds.email &&
+  //     elem.password === userCreds.password
+  //   ) {
+  //     const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
+  //       expiresIn: "1h",
+  //     });
+  //     res.status(200).json({ message: "User Logged in Successfully!", token });
+  //   }
+  // }
+
+  // res.status(401).send("Invalid Credentials!");
 });
 
 // Route for creating Blog!
 
-app.post("/users/craft", authenticateJWT, (req, res) => {
-  const email = req.headers.email;
-  const blogBody = req.body;
+app.post("/users/craft", authenticateJWT, async (req, res) => {
+  // const email = req.headers.email;
+  const user = await Users.findOne({ email: req.user.email });
 
-  if (blogBody) {
-    let id = Math.floor(Math.random() * 100000);
-    const newBlog = {
-      id: id,
-      title: blogBody.title,
-      description: blogBody.description,
-      imgLink: blogBody.imgLink,
-      mainBlog: blogBody.mainBlog,
-    };
+  if (user) {
+    const blog = new Blogs(req.body);
+    await blog.save();
 
-    BLOGS.push(newBlog);
-    fs.writeFileSync("blogs.json", JSON.stringify(BLOGS));
-
-    for (let elem of USERS) {
-      if (elem.email === email) {
-        elem.blogs.push(id);
-        fs.writeFileSync("users.json", JSON.stringify(USERS));
-        break;
-      }
-    }
-
-    res.status(200).send("Blog published!");
+    user.blogs.push(blog);
+    await user.save();
+    res.status(200).json({ message: "Blog published successfully!" });
   } else {
-    res.status(403).send("Error Occured");
+    res.status(401).send("Failed");
   }
+
+  // if (blogBody) {
+  //   let id = Math.floor(Math.random() * 100000);
+  //   const newBlog = {
+  //     id: id,
+  //     title: blogBody.title,
+  //     description: blogBody.description,
+  //     imgLink: blogBody.imgLink,
+  //     mainBlog: blogBody.mainBlog,
+  //   };
+
+  //   BLOGS.push(newBlog);
+  //   fs.writeFileSync("blogs.json", JSON.stringify(BLOGS));
+
+  //   for (let elem of USERS) {
+  //     if (elem.email === email) {
+  //       elem.blogs.push(id);
+  //       fs.writeFileSync("users.json", JSON.stringify(USERS));
+  //       break;
+  //     }
+  //   }
+
+  //   res.status(200).send("Blog published!");
+  // } else {
+  //   res.status(403).send("Error Occured");
+  // }
 });
 
 // Get User Dashboard
