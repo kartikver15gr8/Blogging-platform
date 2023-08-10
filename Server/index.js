@@ -10,20 +10,6 @@ const app = express();
 
 app.use(express.json());
 
-// let USERS = [];
-// let BLOGS = [];
-// let ADMINS = [];
-
-// try {
-//   USERS = JSON.parse(fs.readFileSync("users.json", "utf8"));
-//   BLOGS = JSON.parse(fs.readFileSync("blogs.json", "utf8"));
-//   ADMINS = JSON.parse(fs.readFileSync("admins.json", "utf8"));
-// } catch {
-//   USERS = [];
-//   BLOGS = [];
-//   ADMINS = [];
-// }
-
 // Defining Mongoose Schemas
 
 const adminSchema = new mongoose.Schema({
@@ -125,34 +111,6 @@ app.post("/admin/signup", async (req, res) => {
       .status(200)
       .json({ message: "Admin has been created successfully!", token });
   }
-
-  // for (let elem of ADMINS) {
-  //   if (elem.email === userCreds.email) {
-  //     existingUser = true;
-  //     break;
-  //   }
-  // }
-
-  // if (existingUser) {
-  //   res.status(402).send("Admin already exists with this creds!");
-  // } else {
-  //   let newAdmin = {
-  //     name: userCreds.name,
-  //     email: userCreds.email,
-  //     password: userCreds.password,
-  //   };
-
-  //   const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
-  //     expiresIn: "1h",
-  //   });
-
-  //   ADMINS.push(newAdmin);
-  //   fs.writeFileSync("admins.json", JSON.stringify(ADMINS));
-
-  //   res
-  //     .status(200)
-  //     .json({ message: "Admin has been created successfully!", token });
-  // }
 });
 
 // Admins Login
@@ -172,20 +130,6 @@ app.post("/admin/login", async (req, res) => {
   } else {
     res.status(403).json({ message: "Invalid username or password" });
   }
-
-  // for (let elem of ADMINS) {
-  //   if (
-  //     elem.email === userCreds.email &&
-  //     elem.password === userCreds.password
-  //   ) {
-  //     const token = jwt.sign({ email, role: "admin" }, SECRET_FOR_ADMIN, {
-  //       expiresIn: "1h",
-  //     });
-  //     res.status(200).json({ message: "Logged in Successfullly", token });
-  //   }
-  // }
-
-  // res.status(403).send("Invalid Credentials!");
 });
 
 // Get All Users
@@ -217,35 +161,6 @@ app.post("/users/signup", async (req, res) => {
       .status(200)
       .json({ message: "User has been created successfully!", token });
   }
-
-  // let existingUser = false;
-
-  // for (let elem of USERS) {
-  //   if (elem.email === userCreds.email) {
-  //     existingUser = true;
-  //     break;
-  //   }
-  // }
-
-  // if (existingUser) {
-  //   res.status(403).send("User already exists! Kindly login.");
-  // } else {
-  //   const newUser = {
-  //     name: userCreds.name,
-  //     email: userCreds.email,
-  //     password: userCreds.password,
-  //     blogs: [],
-  //   };
-
-  //   USERS.push(newUser);
-
-  //   const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
-  //     expiresIn: "1h",
-  //   });
-
-  //   fs.writeFileSync("users.json", JSON.stringify(USERS));
-  //   res.status(200).json({ message: "User Created successfully!", token });
-  // }
 });
 
 // Login route
@@ -265,20 +180,6 @@ app.post("/users/login", async (req, res) => {
   } else {
     res.status(403).send("Invalid Creds!");
   }
-
-  // for (let elem of USERS) {
-  //   if (
-  //     elem.email === userCreds.email &&
-  //     elem.password === userCreds.password
-  //   ) {
-  //     const token = jwt.sign({ email, role: "user" }, SECRET_KEY, {
-  //       expiresIn: "1h",
-  //     });
-  //     res.status(200).json({ message: "User Logged in Successfully!", token });
-  //   }
-  // }
-
-  // res.status(401).send("Invalid Credentials!");
 });
 
 // Route for creating Blog!
@@ -297,32 +198,6 @@ app.post("/users/craft", authenticateJWT, async (req, res) => {
   } else {
     res.status(401).send("Failed");
   }
-
-  // if (blogBody) {
-  //   let id = Math.floor(Math.random() * 100000);
-  //   const newBlog = {
-  //     id: id,
-  //     title: blogBody.title,
-  //     description: blogBody.description,
-  //     imgLink: blogBody.imgLink,
-  //     mainBlog: blogBody.mainBlog,
-  //   };
-
-  //   BLOGS.push(newBlog);
-  //   fs.writeFileSync("blogs.json", JSON.stringify(BLOGS));
-
-  //   for (let elem of USERS) {
-  //     if (elem.email === email) {
-  //       elem.blogs.push(id);
-  //       fs.writeFileSync("users.json", JSON.stringify(USERS));
-  //       break;
-  //     }
-  //   }
-
-  //   res.status(200).send("Blog published!");
-  // } else {
-  //   res.status(403).send("Error Occured");
-  // }
 });
 
 // Get User Dashboard
