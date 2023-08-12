@@ -200,11 +200,7 @@ app.post("/users/craft", authenticateJWT, async (req, res) => {
   }
 });
 
-// Get User Dashboard
 
-// app.get("/users/dashboard", authenticateJWT, (req, res) => {
-
-// });
 
 // Get All Blogs
 
