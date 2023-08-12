@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const fs = require("fs");
+// const fs = require("fs");
 const port = 3000;
 const app = express();
 
@@ -133,8 +133,9 @@ app.post("/admin/login", async (req, res) => {
 });
 
 // Get All Users
-app.get("/admin/allusers", authenticateAdmins, (req, res) => {
-  res.status(200).send(JSON.stringify(USERS));
+app.get("/admin/allusers", authenticateAdmins, async (req, res) => {
+  const users = await Users.find({});
+  res.status(200).send(users);
 });
 
 // ---------------- Below are Users Routes ----------------------
@@ -200,12 +201,11 @@ app.post("/users/craft", authenticateJWT, async (req, res) => {
   }
 });
 
-
-
 // Get All Blogs
 
-app.get("/users/blogs", authenticateJWT, (req, res) => {
-  res.status(200).send(JSON.stringify(BLOGS));
+app.get("/users/blogs", authenticateJWT, async (req, res) => {
+  const blogs = await Blogs.find({});
+  res.status(200).send(blogs);
 });
 
 app.listen(port, () => {
