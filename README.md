@@ -69,3 +69,4 @@ I'll use MERN stack for this application!
 ## Manage posts: /api/admin/posts
 
 ## Manage categories/tags: /api/admin/categories
+
