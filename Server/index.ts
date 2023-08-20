@@ -1,6 +1,7 @@
 // Blog API: Develop a blogging platform's backend where users can create, update, and delete posts. Implement features like user authentication, comments, tags, and the ability to like or bookmark posts.
 
 import express, { Request, Response, NextFunction } from "express";
+import { z } from "zod";
 import jwt from "jsonwebtoken";
 import cors, { CorsOptions } from "cors";
 import mongoose, { ObjectId } from "mongoose";
@@ -107,11 +108,22 @@ mongoose.connect(
 
 // Admins Signup
 
+let adminSignupBody = z.object({
+  name: z.string().min(0).max(100),
+  email: z.string().min(0).max(100),
+  password: z.string().min(0).max(100),
+});
+
 app.post("/admin/signup", async (req, res) => {
-  const userCreds = req.body;
-  const name: string = userCreds.name;
-  const email: string = userCreds.email;
-  const password: string = userCreds.password;
+  const userCreds = adminSignupBody.safeParse(req.body);
+
+  if (!userCreds.success) {
+    return res.status(411).json({ msg: "Invalid Inputs" });
+  }
+
+  const name: string = userCreds.data.name;
+  const email: string = userCreds.data.email;
+  const password: string = userCreds.data.password;
 
   // let existingUser = false;
   const admin = await Admins.findOne({ email });
@@ -134,9 +146,14 @@ app.post("/admin/signup", async (req, res) => {
 // Admins Login
 
 app.post("/admin/login", async (req, res) => {
-  const userCreds = req.body;
-  const email = userCreds.email;
-  const password = userCreds.password;
+  const userCreds = adminSignupBody.safeParse(req.body);
+
+  if (!userCreds.success) {
+    return res.status(411).json({ msg: "Your inputs are errenous!" });
+  }
+
+  const email = userCreds.data.email;
+  const password = userCreds.data.password;
 
   const admin = await Admins.findOne({ email, password });
 
@@ -160,8 +177,22 @@ app.get("/admin/allusers", authenticateAdmins, async (req, res) => {
 
 // Users Signup Route
 
+let userSignupBody = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().min(1).max(100),
+  password: z.string().min(1).max(100),
+});
+
 app.post("/users/signup", async (req, res) => {
-  const { name, email, password } = req.body;
+  const userCreds = userSignupBody.safeParse(req.body);
+
+  if (!userCreds.success) {
+    return res.status(411).json({ message: "Erronous Inputs!" });
+  }
+
+  let email: string = userCreds.data.email;
+  let name: string = userCreds.data.name;
+  let password: string = userCreds.data.password;
 
   const user = await Users.findOne({ email });
 
